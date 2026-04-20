@@ -7,6 +7,7 @@ import com.flavio.appointment_booking_api.entity.User;
 import com.flavio.appointment_booking_api.enums.Role;
 import com.flavio.appointment_booking_api.exception.BusinessException;
 import com.flavio.appointment_booking_api.repository.UserRepository;
+import com.flavio.appointment_booking_api.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,10 +18,16 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService
+    ) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -43,6 +50,7 @@ public class UserService {
                 savedUser.getName(),
                 savedUser.getEmail(),
                 savedUser.getRole().name(),
+                null,
                 "User registered successfully"
         );
     }
@@ -57,11 +65,14 @@ public class UserService {
             throw new BusinessException("Invalid email or password");
         }
 
+        String token = jwtService.generateToken(user.getEmail());
+
         return new AuthResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
                 user.getRole().name(),
+                token,
                 "Login successful"
         );
     }
