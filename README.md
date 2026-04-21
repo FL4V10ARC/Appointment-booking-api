@@ -12,6 +12,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Flyway](https://img.shields.io/badge/Flyway-CC0200?logo=flyway&logoColor=white)](https://flywaydb.org)
 [![JUnit5](https://img.shields.io/badge/JUnit%205-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5)
+[![Mockito](https://img.shields.io/badge/Mockito-6DB33F?logo=mockito&logoColor=white)](https://site.mockito.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](https://swagger.io)
 
 > REST API for appointment management with JWT authentication, role-based access control, real business rules and unit tests with Mockito.
@@ -49,30 +50,30 @@ Controller → Service → Repository → PostgreSQL
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Language | Java 21 |
-| Framework | Spring Boot 3 |
-| Security | Spring Security + JWT |
-| Database | PostgreSQL |
-| ORM | JPA / Hibernate |
-| Migrations | Flyway |
-| Build | Maven |
-| Tests | JUnit 5 + Mockito |
+| Layer         | Technology                     |
+| ------------- | ------------------------------ |
+| Language      | Java 21                        |
+| Framework     | Spring Boot 3                  |
+| Security      | Spring Security + JWT          |
+| Database      | PostgreSQL                     |
+| ORM           | JPA / Hibernate                |
+| Migrations    | Flyway                         |
+| Build         | Maven                          |
+| Tests         | JUnit 5 + Mockito              |
 | Documentation | SpringDoc OpenAPI (Swagger UI) |
 
 ---
 
 ## Roles & Permissions
 
-| Endpoint | CLIENT | ADMIN |
-|---|:---:|:---:|
-| POST /auth/register | ✅ | ✅ |
-| POST /auth/login | ✅ | ✅ |
-| POST /appointments | ✅ | ❌ |
-| GET /appointments/me | ✅ | ❌ |
-| GET /appointments | ❌ | ✅ |
-| DELETE /appointments/{id} | own only | ✅ |
+| Endpoint                  |  CLIENT  | ADMIN |
+| ------------------------- | :------: | :---: |
+| POST /auth/register       |    ✅    |  ✅   |
+| POST /auth/login          |    ✅    |  ✅   |
+| POST /appointments        |    ✅    |  ❌   |
+| GET /appointments/me      |    ✅    |  ❌   |
+| GET /appointments         |    ❌    |  ✅   |
+| DELETE /appointments/{id} | own only |  ✅   |
 
 ---
 
@@ -90,6 +91,7 @@ Controller → Service → Repository → PostgreSQL
 Coverage with **JUnit 5 + Mockito** for both main services:
 
 **AppointmentService**
+
 - Successfully creates appointment
 - Rejects past date
 - Rejects time slot conflict
@@ -98,6 +100,7 @@ Coverage with **JUnit 5 + Mockito** for both main services:
 - Allows ADMIN to cancel another user's appointment
 
 **UserService**
+
 - Successfully registers user
 - Rejects duplicate email
 - Successfully logs in
@@ -204,6 +207,7 @@ http://localhost:8080/swagger-ui/index.html
 ```
 
 To test authenticated endpoints:
+
 1. Login at `POST /auth/login`
 2. Copy the returned token
 3. Click **Authorize** in Swagger

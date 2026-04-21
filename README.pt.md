@@ -12,6 +12,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Flyway](https://img.shields.io/badge/Flyway-CC0200?logo=flyway&logoColor=white)](https://flywaydb.org)
 [![JUnit5](https://img.shields.io/badge/JUnit%205-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5)
+[![Mockito](https://img.shields.io/badge/Mockito-6DB33F?logo=mockito&logoColor=white)](https://site.mockito.org/)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](https://swagger.io)
 
 > API REST para gerenciamento de agendamentos com autenticação JWT, controle de acesso por roles, regras de negócio reais e testes unitários com Mockito.
