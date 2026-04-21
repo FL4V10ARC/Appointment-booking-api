@@ -1,6 +1,7 @@
 package com.flavio.appointment_booking_api.service;
 
 import com.flavio.appointment_booking_api.dto.appointment.CreateAppointmentRequest;
+import com.flavio.appointment_booking_api.entity.Appointment;
 import com.flavio.appointment_booking_api.entity.User;
 import com.flavio.appointment_booking_api.exception.BusinessException;
 import com.flavio.appointment_booking_api.repository.AppointmentRepository;
@@ -10,9 +11,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -55,7 +58,7 @@ class AppointmentServiceTest {
 
         when(appointmentRepository.existsByAppointmentTime(any()))
                 .thenReturn(false);
-                
+
         when(appointmentRepository.save(any()))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -86,4 +89,69 @@ class AppointmentServiceTest {
         assertThrows(BusinessException.class,
                 () -> appointmentService.create(request));
     }
+
+    @Test
+    void shouldCancelAppointmentWhenUserIsOwner() {
+        Appointment appointment = new Appointment();
+        appointment.setId(1L);
+        appointment.setClient(mockUser);
+        appointment.setStatus("SCHEDULED");
+
+        when(appointmentRepository.findById(1L))
+            .thenReturn(Optional.of(appointment));
+
+        assertDoesNotThrow(() -> appointmentService.cancel(1L));
+
+        assertEquals("CANCELED", appointment.getStatus());
+        verify(appointmentRepository, times(1)).save(appointment);
+}
+
+    @Test
+    void shouldThrowExceptionWhenUserIsNotOwnerAndNotAdmin() {
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setEmail("other@email.com");
+
+        Appointment appointment = new Appointment();
+        appointment.setId(1L);
+        appointment.setClient(otherUser);
+        appointment.setStatus("SCHEDULED");
+
+        when(appointmentRepository.findById(1L))
+            .thenReturn(Optional.of(appointment));
+
+        assertThrows(BusinessException.class, () -> appointmentService.cancel(1L));
+        verify(appointmentRepository, never()).save(any());
+}
+
+    @Test
+    void shouldCancelAppointmentWhenUserIsAdmin() {
+        User otherUser = new User();
+        otherUser.setId(2L);
+        otherUser.setEmail("other@email.com");
+
+        Appointment appointment = new Appointment();
+        appointment.setId(1L);
+        appointment.setClient(otherUser);
+        appointment.setStatus("SCHEDULED");
+
+        SecurityContextHolder.getContext().setAuthentication(
+            new UsernamePasswordAuthenticationToken(
+                    mockUser.getEmail(),
+                    null,
+                    List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+            )
+    );
+
+        when(userRepository.findByEmail(mockUser.getEmail()))
+            .thenReturn(Optional.of(mockUser));
+
+        when(appointmentRepository.findById(1L))
+            .thenReturn(Optional.of(appointment));
+
+        assertDoesNotThrow(() -> appointmentService.cancel(1L));
+
+        assertEquals("CANCELED", appointment.getStatus());
+        verify(appointmentRepository, times(1)).save(appointment);
+}
 }
