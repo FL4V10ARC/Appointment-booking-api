@@ -23,17 +23,19 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
-           .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test", "/auth/**").permitAll()
-                // CLIENT pode criar
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/test",
+                    "/auth/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 .requestMatchers(HttpMethod.POST, "/appointments").hasRole("CLIENT")
-                // CLIENT vê os próprios
                 .requestMatchers("/appointments/me").hasRole("CLIENT")
-                 // ADMIN vê todos
                 .requestMatchers(HttpMethod.GET, "/appointments").hasRole("ADMIN")
-                 // qualquer outra precisa estar autenticado
                 .anyRequest().authenticated()
-)
+            )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
