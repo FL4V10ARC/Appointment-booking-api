@@ -197,6 +197,8 @@ Authorization: Bearer <token>
 
 With the application running, access:
 
+![Swagger](./docs/swagger-home.jpeg)
+
 ```
 http://localhost:8080/swagger-ui/index.html
 ```

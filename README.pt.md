@@ -197,6 +197,8 @@ Authorization: Bearer <token>
 
 ## Documentação interativa (Swagger)
 
+![Swagger](./docs/swagger-home.jpeg)
+
 Com a aplicação rodando, acesse:
 
 ```
