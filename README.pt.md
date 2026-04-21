@@ -11,15 +11,16 @@
 [![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Flyway](https://img.shields.io/badge/Flyway-CC0200?logo=flyway&logoColor=white)](https://flywaydb.org)
+[![JUnit5](https://img.shields.io/badge/JUnit%205-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](https://swagger.io)
 
-> API REST para gerenciamento de agendamentos com autenticação JWT, controle de acesso por roles e regras de negócio reais.
+> API REST para gerenciamento de agendamentos com autenticação JWT, controle de acesso por roles, regras de negócio reais e testes unitários com Mockito.
 
 ---
 
 ## Sobre o projeto
 
-A **Appointment Booking API** simula um sistema real de agendamento de serviços. O projeto foi desenvolvido com foco em boas práticas de back-end: segurança com JWT, arquitetura em camadas, validação de dados e tratamento global de exceções.
+A **Appointment Booking API** simula um sistema real de agendamento de serviços. O projeto foi desenvolvido com foco em boas práticas de back-end: segurança com JWT, arquitetura em camadas, validação de dados, tratamento global de exceções e cobertura de testes.
 
 ---
 
@@ -35,10 +36,10 @@ Client
 [SecurityConfig] → verifica ROLE (CLIENT / ADMIN)
   │
   ├── POST /auth/**              → público (register, login)
-  ├── POST /appointments         → CLIENT only
-  ├── GET  /appointments/me      → CLIENT only
-  ├── GET  /appointments         → ADMIN only
-  └── DELETE /appointments/{id}  → CLIENT (próprio) | ADMIN (qualquer)
+  ├── POST /appointments         → CLIENT only  → 201 Created
+  ├── GET  /appointments/me      → CLIENT only  → 200 OK
+  ├── GET  /appointments         → ADMIN only   → 200 OK
+  └── DELETE /appointments/{id}  → CLIENT (próprio) | ADMIN → 204 No Content
   │
   ▼
 Controller → Service → Repository → PostgreSQL
@@ -48,38 +49,62 @@ Controller → Service → Repository → PostgreSQL
 
 ## Tecnologias
 
-| Camada | Tecnologia |
-|---|---|
-| Linguagem | Java 21 |
-| Framework | Spring Boot 3 |
-| Segurança | Spring Security + JWT |
-| Banco de dados | PostgreSQL |
-| ORM | JPA / Hibernate |
-| Migrations | Flyway |
-| Build | Maven |
-| Documentação | SpringDoc OpenAPI (Swagger UI) |
+| Camada         | Tecnologia                     |
+| -------------- | ------------------------------ |
+| Linguagem      | Java 21                        |
+| Framework      | Spring Boot 3                  |
+| Segurança      | Spring Security + JWT          |
+| Banco de dados | PostgreSQL                     |
+| ORM            | JPA / Hibernate                |
+| Migrations     | Flyway                         |
+| Build          | Maven                          |
+| Testes         | JUnit 5 + Mockito              |
+| Documentação   | SpringDoc OpenAPI (Swagger UI) |
 
 ---
 
 ## Roles e Permissões
 
-| Endpoint | CLIENT | ADMIN |
-|---|:---:|:---:|
-| POST /auth/register | ✅ | ✅ |
-| POST /auth/login | ✅ | ✅ |
-| POST /appointments | ✅ | ❌ |
-| GET /appointments/me | ✅ | ❌ |
-| GET /appointments | ❌ | ✅ |
-| DELETE /appointments/{id} | próprio | ✅ |
+| Endpoint                  | CLIENT  | ADMIN |
+| ------------------------- | :-----: | :---: |
+| POST /auth/register       |   ✅    |  ✅   |
+| POST /auth/login          |   ✅    |  ✅   |
+| POST /appointments        |   ✅    |  ❌   |
+| GET /appointments/me      |   ✅    |  ❌   |
+| GET /appointments         |   ❌    |  ✅   |
+| DELETE /appointments/{id} | próprio |  ✅   |
 
 ---
 
 ## Regras de negócio
 
-- Não permite agendamento no passado
+- Não permite agendamento em data passada
 - Não permite conflito de horários
 - CLIENT só acessa e cancela seus próprios agendamentos
 - ADMIN acessa e cancela qualquer agendamento
+
+---
+
+## Testes unitários
+
+Cobertura com **JUnit 5 + Mockito** para os dois services principais:
+
+**AppointmentService**
+
+- Criação de agendamento com sucesso
+- Rejeição de data no passado
+- Rejeição de conflito de horário
+- Cancelamento pelo dono (CLIENT)
+- Rejeição de cancelamento por usuário sem permissão
+- Cancelamento por ADMIN de agendamento de outro usuário
+
+**UserService**
+
+- Registro com sucesso
+- Rejeição de email duplicado
+- Login com sucesso
+- Rejeição de senha inválida
+- Rejeição de usuário inexistente
 
 ---
 
@@ -118,6 +143,12 @@ spring.datasource.password=SUA_SENHA
 ./mvnw spring-boot:run
 ```
 
+### 5. Rode os testes
+
+```bash
+./mvnw test
+```
+
 ---
 
 ## Endpoints
@@ -130,8 +161,7 @@ POST /auth/register
 {
   "name": "Flávio",
   "email": "flavio@email.com",
-  "password": "123456",
-  "role": "CLIENT"
+  "password": "123456"
 }
 
 # Login → retorna JWT
@@ -145,22 +175,20 @@ POST /auth/login
 ### Agendamentos
 
 ```bash
-# Criar agendamento (CLIENT)
+# Criar agendamento → 201 Created
 POST /appointments
 Authorization: Bearer <token>
-{
-  "appointmentTime": "2025-12-01T10:00:00"
-}
+{ "appointmentTime": "2025-12-01T10:00:00" }
 
-# Meus agendamentos (CLIENT)
+# Meus agendamentos → 200 OK
 GET /appointments/me
 Authorization: Bearer <token>
 
-# Todos os agendamentos (ADMIN)
+# Todos os agendamentos (ADMIN) → 200 OK
 GET /appointments
 Authorization: Bearer <token>
 
-# Cancelar agendamento
+# Cancelar agendamento → 204 No Content
 DELETE /appointments/{id}
 Authorization: Bearer <token>
 ```
@@ -176,6 +204,7 @@ http://localhost:8080/swagger-ui/index.html
 ```
 
 Para testar endpoints autenticados:
+
 1. Faça login em `POST /auth/login`
 2. Copie o token retornado
 3. Clique em **Authorize** no Swagger

@@ -11,15 +11,16 @@
 [![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)](https://jwt.io)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Flyway](https://img.shields.io/badge/Flyway-CC0200?logo=flyway&logoColor=white)](https://flywaydb.org)
+[![JUnit5](https://img.shields.io/badge/JUnit%205-25A162?logo=junit5&logoColor=white)](https://junit.org/junit5)
 [![Swagger](https://img.shields.io/badge/Swagger-85EA2D?logo=swagger&logoColor=black)](https://swagger.io)
 
-> REST API for appointment management with JWT authentication, role-based access control and real business rules.
+> REST API for appointment management with JWT authentication, role-based access control, real business rules and unit tests with Mockito.
 
 ---
 
 ## About
 
-The **Appointment Booking API** simulates a real-world service scheduling system. The project was built focusing on backend best practices: JWT security, layered architecture, data validation and global exception handling.
+The **Appointment Booking API** simulates a real-world service scheduling system. Built focusing on backend best practices: JWT security, layered architecture, data validation, global exception handling and test coverage.
 
 ---
 
@@ -35,10 +36,10 @@ Client
 [SecurityConfig] → checks ROLE (CLIENT / ADMIN)
   │
   ├── POST /auth/**              → public (register, login)
-  ├── POST /appointments         → CLIENT only
-  ├── GET  /appointments/me      → CLIENT only
-  ├── GET  /appointments         → ADMIN only
-  └── DELETE /appointments/{id}  → CLIENT (own) | ADMIN (any)
+  ├── POST /appointments         → CLIENT only  → 201 Created
+  ├── GET  /appointments/me      → CLIENT only  → 200 OK
+  ├── GET  /appointments         → ADMIN only   → 200 OK
+  └── DELETE /appointments/{id}  → CLIENT (own) | ADMIN → 204 No Content
   │
   ▼
 Controller → Service → Repository → PostgreSQL
@@ -57,6 +58,7 @@ Controller → Service → Repository → PostgreSQL
 | ORM | JPA / Hibernate |
 | Migrations | Flyway |
 | Build | Maven |
+| Tests | JUnit 5 + Mockito |
 | Documentation | SpringDoc OpenAPI (Swagger UI) |
 
 ---
@@ -80,6 +82,27 @@ Controller → Service → Repository → PostgreSQL
 - Time slot conflicts are not allowed
 - CLIENT can only access and cancel their own appointments
 - ADMIN can access and cancel any appointment
+
+---
+
+## Unit Tests
+
+Coverage with **JUnit 5 + Mockito** for both main services:
+
+**AppointmentService**
+- Successfully creates appointment
+- Rejects past date
+- Rejects time slot conflict
+- Allows owner (CLIENT) to cancel
+- Rejects cancellation by unauthorized user
+- Allows ADMIN to cancel another user's appointment
+
+**UserService**
+- Successfully registers user
+- Rejects duplicate email
+- Successfully logs in
+- Rejects invalid password
+- Rejects non-existent user
 
 ---
 
@@ -118,6 +141,12 @@ spring.datasource.password=YOUR_PASSWORD
 ./mvnw spring-boot:run
 ```
 
+### 5. Run the tests
+
+```bash
+./mvnw test
+```
+
 ---
 
 ## Endpoints
@@ -130,8 +159,7 @@ POST /auth/register
 {
   "name": "Flávio",
   "email": "flavio@email.com",
-  "password": "123456",
-  "role": "CLIENT"
+  "password": "123456"
 }
 
 # Login → returns JWT
@@ -145,22 +173,20 @@ POST /auth/login
 ### Appointments
 
 ```bash
-# Create appointment (CLIENT)
+# Create appointment → 201 Created
 POST /appointments
 Authorization: Bearer <token>
-{
-  "appointmentTime": "2025-12-01T10:00:00"
-}
+{ "appointmentTime": "2025-12-01T10:00:00" }
 
-# My appointments (CLIENT)
+# My appointments → 200 OK
 GET /appointments/me
 Authorization: Bearer <token>
 
-# All appointments (ADMIN)
+# All appointments (ADMIN) → 200 OK
 GET /appointments
 Authorization: Bearer <token>
 
-# Cancel appointment
+# Cancel appointment → 204 No Content
 DELETE /appointments/{id}
 Authorization: Bearer <token>
 ```
